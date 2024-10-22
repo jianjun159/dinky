@@ -17,19 +17,36 @@
  *
  */
 
-export enum SettingConfigKeyEnum {
-  DINKY = 'Dinky',
-  FLINK = 'Flink',
-  MAVEN = 'Maven',
-  DOLPHIN_SCHEDULER = 'DolphinScheduler',
-  LDAP = 'LDAP',
-  METRIC = 'Metric',
-  RESOURCE = 'Resource',
-  ENV = 'Env',
-  INGRESS = 'Ingress',
-}
+package org.dinky.gateway.model.ingress;
 
-export enum ButtonFrontendType {
-  BOOLEAN = 'boolean',
-  OPTION = 'option'
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+public class JobOverviewTaskInfo {
+
+    private Integer running;
+
+    private Integer canceling;
+
+    private Integer canceled;
+
+    private Integer total;
+
+    private Integer created;
+
+    private Integer scheduled;
+
+    private Integer deploying;
+
+    private Integer reconciling;
+
+    private Integer finished;
+
+    private Integer initializing;
+
+    private Integer failed;
 }

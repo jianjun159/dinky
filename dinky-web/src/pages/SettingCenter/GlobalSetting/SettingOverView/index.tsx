@@ -21,7 +21,7 @@ import FadeIn from '@/components/Animation/FadeIn';
 import {
   DinkyIcon,
   DSIcon,
-  FlinkIcon,
+  FlinkIcon, IngressIcon,
   LDAPIcon,
   MavenIcon,
   MetricsIcon,
@@ -45,6 +45,7 @@ import { BaseConfigProperties, Settings } from '@/types/SettingCenter/data';
 import { l } from '@/utils/intl';
 import { ProCard } from '@ant-design/pro-components';
 import { memo, useEffect, useState } from 'react';
+import { IngressConfig } from "@/pages/SettingCenter/GlobalSetting/SettingOverView/IngressConfig";
 
 const imgSize = 25;
 
@@ -60,7 +61,8 @@ const SettingOverView = () => {
     maven: [],
     ldap: [],
     metrics: [],
-    resource: []
+    resource: [],
+    ingress: [],
   });
 
   const fetchData = async () => {
@@ -104,7 +106,8 @@ const SettingOverView = () => {
       dolphinscheduler: dsConfig,
       ldap: ldapConfig,
       metrics: metricsConfig,
-      resource: resourceConfig
+      resource: resourceConfig,
+      ingress: ingressConfig,
     } = data;
 
     return [
@@ -226,6 +229,23 @@ const SettingOverView = () => {
           />
         ),
         path: PermissionConstants.SETTING_GLOBAL_RESOURCE
+      },
+      {
+        key: SettingConfigKeyEnum.INGRESS,
+        label: (
+          <TagAlignCenter>
+            <IngressIcon size={imgSize} />
+            {l('sys.setting.ingress')}
+          </TagAlignCenter>
+        ),
+        children: (
+          <IngressConfig
+            auth={PermissionConstants.SETTING_GLOBAL_INGRESS_EDIT}
+            onSave={handleSaveSubmit}
+            data={ingressConfig}
+          />
+        ),
+        path: PermissionConstants.SETTING_GLOBAL_INGRESS
       }
     ];
   };

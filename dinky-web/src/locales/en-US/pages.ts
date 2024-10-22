@@ -1217,6 +1217,7 @@ export default {
   'sys.ldap.settings.keyword':
     'You can enter your username/nickname for search, support fuzzy queries, enter keywords and press enter to complete the search',
   'sys.ldap.settings.loadable': 'Whether it can be imported',
+  'sys.setting.ingress': 'Ingress configuration',
   /**
    *
    * tenant
