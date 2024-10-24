@@ -1032,6 +1032,11 @@ export default {
   'rc.udf.register.deleteConfirm': '确定删除该 UDF 吗？',
   'rc.udf.register': '注册 UDF',
   'rc.udf.register.select': '请选择非目录节点！',
+  // ingress
+  'rc.cc.k8s.ingress.enabled': '是否启用Ingress',
+  'rc.cc.k8s.ingress.enabledHelp': '是否启用Ingress! eg',
+  'rc.cc.k8s.ingress.domain': 'Ingress域名地址',
+  'rc.cc.k8s.ingress.domainHelp': 'Ingress域名地址! eg',
 
   /**
    *

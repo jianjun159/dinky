@@ -25,8 +25,7 @@ export enum SettingConfigKeyEnum {
   LDAP = 'LDAP',
   METRIC = 'Metric',
   RESOURCE = 'Resource',
-  ENV = 'Env',
-  INGRESS = 'Ingress',
+  ENV = 'Env'
 }
 
 export enum ButtonFrontendType {

@@ -465,14 +465,6 @@ public enum Status {
             204, "sys.flink.settings.flinkHistoryServerArchiveRefreshInterval"),
     SYS_FLINK_SETTINGS_FLINK_HISTORY_SERVER_ARCHIVE_REFRESH_INTERVAL_NOTE(
             205, "sys.flink.settings.flinkHistoryServerArchiveRefreshInterval.note"),
-
-    /**
-     * ingress config
-     * */
-    SYS_INGRESS_SETTINGS_ENABLE(206, "sys.ingress.settings.enable"),
-    SYS_INGRESS_SETTINGS_ENABLE_NOTE(207, "sys.ingress.settings.enable.note"),
-    SYS_INGRESS_SETTINGS_DOMAIN(208, "sys.ingress.settings.domain"),
-    SYS_INGRESS_SETTINGS_DOMAIN_NOTE(209, "sys.ingress.settings.domain.note"),
     ;
     private final int code;
     private final String key;

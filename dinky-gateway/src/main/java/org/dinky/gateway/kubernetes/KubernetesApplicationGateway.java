@@ -19,6 +19,9 @@
 
 package org.dinky.gateway.kubernetes;
 
+import static org.dinky.gateway.kubernetes.utils.DinkyKubernetsConstants.DINKY_K8S_INGRESS_DOMAIN_KEY;
+import static org.dinky.gateway.kubernetes.utils.DinkyKubernetsConstants.DINKY_K8S_INGRESS_ENABLED_KEY;
+
 import org.dinky.assertion.Asserts;
 import org.dinky.context.FlinkUdfPathContextHolder;
 import org.dinky.data.enums.GatewayType;
@@ -35,6 +38,7 @@ import org.dinky.gateway.result.GatewayResult;
 import org.dinky.gateway.result.KubernetesResult;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.flink.api.common.JobStatus;
 import org.apache.flink.client.deployment.ClusterDeploymentException;
@@ -51,6 +55,7 @@ import org.apache.flink.runtime.client.JobStatusMessage;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
@@ -103,13 +108,12 @@ public class KubernetesApplicationGateway extends KubernetesGateway {
 
             KubernetesResult kubernetesResult;
 
-            boolean ingressEnable = SystemConfiguration.getInstances().getIngressEnable();
-            String ingressDomain = SystemConfiguration.getInstances().getIngressDomain();
+            String ingressDomain = checkUseIngress();
             // if ingress is enabled and ingress domain is not empty, create an ingress service
-            if (ingressEnable && StringUtils.isNotEmpty(ingressDomain)) {
+            if (StringUtils.isNotEmpty(ingressDomain)) {
                 K8sClientHelper k8sClientHelper = getK8sClientHelper();
                 long ingressStart = SystemClock.now();
-                DinkyKubernetesIngress ingress = new DinkyKubernetesIngress(getK8sClientHelper());
+                DinkyKubernetesIngress ingress = new DinkyKubernetesIngress(k8sClientHelper);
                 ingress.configureIngress(
                         k8sClientHelper.getConfiguration().getString(KubernetesConfigOptions.CLUSTER_ID),
                         ingressDomain,
@@ -352,5 +356,22 @@ public class KubernetesApplicationGateway extends KubernetesGateway {
         }
         throw new GatewayException(
                 StrFormatter.format("Dinky clusterId {} ingress not found in namespace {}", clusterId, namespace));
+    }
+
+    /**
+     * Determine whether to use the ingress agent service
+     * @return ingress domain
+     */
+    private String checkUseIngress() {
+        Map<String, String> ingressConfig = k8sConfig.getIngressConfig();
+        if (MapUtils.isNotEmpty(ingressConfig)) {
+            boolean ingressEnable =
+                    Boolean.parseBoolean(ingressConfig.getOrDefault(DINKY_K8S_INGRESS_ENABLED_KEY, "false"));
+            String ingressDomain = ingressConfig.getOrDefault(DINKY_K8S_INGRESS_DOMAIN_KEY, StringUtils.EMPTY);
+            if (ingressEnable && StringUtils.isNotEmpty(ingressDomain)) {
+                return ingressDomain;
+            }
+        }
+        return StringUtils.EMPTY;
     }
 }

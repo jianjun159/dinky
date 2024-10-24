@@ -1113,6 +1113,11 @@ export default {
   'rc.udf.register.deleteConfirm': 'Are you sure you want to delete this UDF? ',
   'rc.udf.register': 'Register UDF',
   'rc.udf.register.select': 'Please select a non-directory node',
+  // ingress
+  'rc.cc.k8s.ingress.enabled': 'Kubernetes ingress enable',
+  'rc.cc.k8s.ingress.enabledHelp': 'Kubernetes ingress enable! eg',
+  'rc.cc.k8s.ingress.domain': 'Kubernetes ingress domain address',
+  'rc.cc.k8s.ingress.domainHelp': 'Kubernetes ingress domain address! eg',
   /**
    *
    * role

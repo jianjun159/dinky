@@ -323,16 +323,6 @@ public class SystemConfiguration {
             .defaultValue(true)
             .note(Status.SYS_RESOURCE_SETTINGS_PATH_STYLE_ACCESS_NOTE);
 
-    private final Configuration<Boolean> ingressEnable = key(Status.SYS_INGRESS_SETTINGS_ENABLE)
-            .booleanType()
-            .defaultValue(false)
-            .note(Status.SYS_INGRESS_SETTINGS_ENABLE_NOTE);
-
-    private final Configuration<String> ingressDomain = key(Status.SYS_INGRESS_SETTINGS_DOMAIN)
-            .stringType()
-            .defaultValue("")
-            .note(Status.SYS_INGRESS_SETTINGS_DOMAIN_NOTE);
-
     /**
      * Initialize after spring bean startup
      */
@@ -423,14 +413,6 @@ public class SystemConfiguration {
 
     public String getPythonHome() {
         return pythonHome.getValue();
-    }
-
-    public Boolean getIngressEnable() {
-        return ingressEnable.getValue();
-    }
-
-    public String getIngressDomain() {
-        return ingressDomain.getValue();
     }
 
     public OssProperties getOssProperties() {
