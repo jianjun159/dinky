@@ -104,8 +104,7 @@ const SettingOverView = () => {
       dolphinscheduler: dsConfig,
       ldap: ldapConfig,
       metrics: metricsConfig,
-      resource: resourceConfig,
-      ingress: ingressConfig
+      resource: resourceConfig
     } = data;
 
     return [

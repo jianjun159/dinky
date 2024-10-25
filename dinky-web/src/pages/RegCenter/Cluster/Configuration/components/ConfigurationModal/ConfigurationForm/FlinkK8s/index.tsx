@@ -157,7 +157,6 @@ const FlinkK8s = (props: { type: string; value: any; form: FormInstance<Values> 
     ['config', 'kubernetesConfig', 'ingressConfig', 'kubernetes.ingress.enabled'],
     form
   );
-  console.log(ingressEnabled);
 
   return (
     <>
