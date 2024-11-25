@@ -30,6 +30,8 @@ import org.dinky.data.enums.GatewayType;
 import org.dinky.data.enums.ProcessStepType;
 import org.dinky.data.enums.Status;
 import org.dinky.data.exception.BusException;
+import org.dinky.data.job.JobStatement;
+import org.dinky.data.job.SqlType;
 import org.dinky.data.model.SystemConfiguration;
 import org.dinky.data.result.ErrorResult;
 import org.dinky.data.result.ExplainResult;
@@ -50,12 +52,8 @@ import org.dinky.gateway.enums.SavePointType;
 import org.dinky.gateway.result.GatewayResult;
 import org.dinky.gateway.result.SavePointResult;
 import org.dinky.gateway.result.TestResult;
-import org.dinky.job.builder.JobDDLBuilder;
-import org.dinky.job.builder.JobExecuteBuilder;
 import org.dinky.job.builder.JobJarStreamGraphBuilder;
-import org.dinky.job.builder.JobTransBuilder;
-import org.dinky.job.builder.JobUDFBuilder;
-import org.dinky.parser.SqlType;
+import org.dinky.job.runner.JobJarRunner;
 import org.dinky.trans.Operations;
 import org.dinky.trans.parse.AddFileSqlParseStrategy;
 import org.dinky.trans.parse.AddJarSqlParseStrategy;
@@ -108,9 +106,11 @@ public class JobManager {
     private boolean useGateway = false;
     private boolean isPlanMode = false;
     private boolean useStatementSet = false;
+    private boolean useMockSinkFunction = false;
     private boolean useRestAPI = false;
     private GatewayType runMode = GatewayType.LOCAL;
     private JobParam jobParam = null;
+    private JobStatementPlan jobStatementPlan;
     private String currentSql = "";
     private final WeakReference<DinkyClassLoader> dinkyClassLoader = new WeakReference<>(DinkyClassLoader.build());
     private Job job;
@@ -169,9 +169,13 @@ public class JobManager {
         return useGateway;
     }
 
+    public JobStatementPlan getJobStatementPlan() {
+        return jobStatementPlan;
+    }
+
     // return dinkyclassloader
     public DinkyClassLoader getDinkyClassLoader() {
-        return dinkyClassLoader.get();
+        return Asserts.isNotNull(dinkyClassLoader.get()) ? dinkyClassLoader.get() : DinkyClassLoader.build();
     }
 
     // return udfPathContextHolder
@@ -214,22 +218,24 @@ public class JobManager {
             handler = JobHandler.build();
         }
         useStatementSet = config.isStatementSet();
+        useMockSinkFunction = config.isMockSinkFunction();
         useRestAPI = SystemConfiguration.getInstances().isUseRestAPI();
         executorConfig = config.getExecutorSetting();
         executorConfig.setPlan(isPlanMode);
         executor = ExecutorFactory.buildExecutor(executorConfig, getDinkyClassLoader());
+        DinkyClassLoaderUtil.initClassLoader(config, getDinkyClassLoader());
     }
 
     private boolean ready() {
-        return handler.init(job);
+        return isPlanMode || handler.init(job);
     }
 
     private boolean success() {
-        return handler.success();
+        return isPlanMode || handler.success();
     }
 
     private boolean failed() {
-        return handler.failed();
+        return isPlanMode || handler.failed();
     }
 
     public boolean close() {
@@ -256,12 +262,18 @@ public class JobManager {
                 .map(t -> executor.pretreatStatement(t))
                 .collect(Collectors.toList());
         statement = String.join(";\n", statements);
-        jobParam =
-                Explainer.build(executor, useStatementSet, this).pretreatStatements(SqlUtil.getStatements(statement));
+        jobStatementPlan = Explainer.build(this).parseStatements(SqlUtil.getStatements(statement));
+        jobStatementPlan.setSubmissionMode(config.isSubmissionMode());
+        jobStatementPlan.buildFinalStatement();
         job = Job.build(runMode, config, executorConfig, executor, statement, useGateway);
         ready();
         try {
-            JobJarStreamGraphBuilder.build(this).run();
+            // Only one is executed.
+            for (JobStatement jobStatement : jobStatementPlan.getJobStatementList()) {
+                JobJarRunner jobJarRunner = new JobJarRunner(this);
+                jobJarRunner.run(jobStatement);
+                break;
+            }
             if (job.isFailed()) {
                 failed();
             } else {
@@ -286,20 +298,14 @@ public class JobManager {
     public JobResult executeSql(String statement) throws Exception {
         job = Job.build(runMode, config, executorConfig, executor, statement, useGateway);
         ready();
-
-        DinkyClassLoaderUtil.initClassLoader(config, getDinkyClassLoader());
-        jobParam =
-                Explainer.build(executor, useStatementSet, this).pretreatStatements(SqlUtil.getStatements(statement));
         try {
-            // step 1: init udf
-            JobUDFBuilder.build(this).run();
-            // step 2: execute ddl
-            JobDDLBuilder.build(this).run();
-            // step 3: execute insert/select/show/desc/CTAS...
-            JobTransBuilder.build(this).run();
-            // step 4: execute custom data stream task
-            JobExecuteBuilder.build(this).run();
-            // finished
+            jobStatementPlan = Explainer.build(this).parseStatements(SqlUtil.getStatements(statement));
+            jobStatementPlan.setSubmissionMode(config.isSubmissionMode());
+            jobStatementPlan.buildFinalStatement();
+            JobRunnerFactory jobRunnerFactory = JobRunnerFactory.create(this);
+            for (JobStatement jobStatement : jobStatementPlan.getJobStatementList()) {
+                jobRunnerFactory.getJobRunner(jobStatement.getStatementType()).run(jobStatement);
+            }
             job.setEndTime(LocalDateTime.now());
             if (job.isFailed()) {
                 failed();
@@ -368,22 +374,15 @@ public class JobManager {
     }
 
     public ExplainResult explainSql(String statement) {
-        return Explainer.build(executor, useStatementSet, this)
-                .initialize(config, statement)
-                .explainSql(statement);
+        return Explainer.build(this).explainSql(statement);
     }
 
     public ObjectNode getStreamGraph(String statement) {
-        return Explainer.build(executor, useStatementSet, this)
-                .initialize(config, statement)
-                .getStreamGraph(statement);
+        return Explainer.build(this).getStreamGraph(statement);
     }
 
     public String getJobPlanJson(String statement) {
-        return Explainer.build(executor, useStatementSet, this)
-                .initialize(config, statement)
-                .getJobPlanInfo(statement)
-                .getJsonPlan();
+        return Explainer.build(this).getJobPlanInfo(statement).getJsonPlan();
     }
 
     public boolean cancelNormal(String jobId) {

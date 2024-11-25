@@ -400,8 +400,8 @@ export default {
   'pages.datastudio.editor.exec.success': '提交成功',
   'pages.datastudio.editor.execute.warn':
     '该任务执行模式为【{type}】，不支持 SQL 查询，请手动保存后使用右侧按钮——作业提交',
-  'pages.datastudio.editor.explan': '获取当前的 FlinkSql 的执行图',
-  'pages.datastudio.editor.explan.tip': 'FlinkSQL 的 JobPlan',
+  'pages.datastudio.editor.explain': '获取当前的 FlinkSql 的执行图',
+  'pages.datastudio.editor.explain.tip': 'FlinkSQL 的 JobPlan',
   'pages.datastudio.editor.stop': '停止',
   'pages.datastudio.editor.stop.job': '停止作业',
   'pages.datastudio.editor.stop.jobConfirm': '确定停止作业【{jobName}】吗？',
@@ -453,16 +453,19 @@ export default {
   'pages.datastudio.label.execConfig.selectDatabase.tip': '选择 Sql 语句执行的数据源',
   'pages.datastudio.label.execConfig.maxrow': '最大行数',
   'pages.datastudio.label.execConfig.maxrow.tip': '预览数据的最大行数',
+  'pages.datastudio.label.execConfig.mocksink': '开启SinkMock',
+  'pages.datastudio.label.execConfig.mocksink.tip':
+    '将SinkFunction进行Mock，调试过程中不会向线上环境执行写入，但可以通过dinky预览Sink结果',
   'pages.datastudio.label.jobConfig': '作业配置',
   'pages.datastudio.label.jobConfig.addConfig': '添加配置项',
   'pages.datastudio.label.jobConfig.addConfig.params': '参数',
   'pages.datastudio.label.jobConfig.addConfig.value': '值',
-  'pages.datastudio.label.udf': '注入UDF算子',
+  'pages.datastudio.label.udf': '引用 UDF',
   'pages.datastudio.label.udf.tip':
-    '注入UDF算子, 自动在所有语句前注入`create temporary function [functionName] as [className]` 语句',
+    '引用 UDF, 自动在所有语句前执行`create temporary function [functionName] as [className]` 语句',
   'pages.datastudio.label.udf.duplicate.tip':
-    '此次选择的类[className]已经存在,不允许重复注入,请重新选择,或者取消注入(删除改行即可)。',
-  'pages.datastudio.label.udf.injectUdf': '注入UDF',
+    '此次选择的类[className]已经存在,不允许重复注入,请重新选择,或者取消引用(删除改行即可)。',
+  'pages.datastudio.label.udf.injectUdf': '引用 UDF',
   'pages.datastudio.label.udf.name': '函数名称',
   'pages.datastudio.label.udf.className': '类名',
   'pages.datastudio.label.jobConfig.alertGroup': '告警组',
@@ -506,12 +509,18 @@ export default {
   'pages.datastudio.label.result.query.latest.data.truncate': '数据过长无法全部显示',
   'pages.datastudio.label.version': '版本历史',
   'pages.datastudio.label.version.diff': '版本对比',
-  'pages.datastudio.label.version.leftTitle': '版本号：【{versionId}】 创建时间',
-  'pages.datastudio.label.version.rightTitle': '版本号：【当前编辑版本】 创建时间',
+  'pages.datastudio.label.version.leftTitle': '版本号：【{versionId}】 创建时间：【{createTime}】',
+  'pages.datastudio.label.version.rightTitle':
+    '版本号：【当前编辑版本】 更新时间：【{updateTime}】',
   'pages.datastudio.label.version.rollback': '回滚',
   'pages.datastudio.label.version.rollback.flinksql': '回滚Flink SQL版本',
   'pages.datastudio.label.version.rollback.flinksqlConfirm':
     '确定回滚Flink SQL版本至【{versionId}】吗？',
+
+  'pages.datastudio.label.lastUpdateDes': '最近保存',
+  'pages.datastudio.label.lastUpdateJust': '刚刚',
+  'pages.datastudio.label.lastUpdateMinutesAgo': '分钟前',
+  'pages.datastudio.label.lastUpdateHoursAgo': '小时前',
 
   'pages.datastudio.catalog.catalogSelect': '请选择 catalog & database',
   'pages.datastudio.catalog.tableInfo': '表信息',
@@ -1285,5 +1294,10 @@ export default {
   'dashboard.theme.shine': '明亮',
   'dashboard.theme.vintage': '复古',
   'dashboard.theme.westeros': '西部',
-  'dashboard.theme.wonderland': '奇幻'
+  'dashboard.theme.wonderland': '奇幻',
+
+  'datastudio.toolbar.rightClick.hideToolbarDesc': '隐藏工具栏窗口名称',
+  'datastudio.toolbar.rightClick.showToolbarDesc': '显示工具栏窗口名称',
+  'datastudio.toolbar.rightClick.closeCompact': '关闭紧凑模式',
+  'datastudio.toolbar.rightClick.openCompact': '打开紧凑模式'
 };

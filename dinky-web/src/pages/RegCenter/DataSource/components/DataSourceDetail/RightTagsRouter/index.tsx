@@ -34,29 +34,30 @@ import { ProCard } from '@ant-design/pro-components';
 import { Space } from 'antd';
 import { SearchOutline } from 'antd-mobile-icons';
 import React, { useEffect, useState } from 'react';
+import { useAsyncEffect } from 'ahooks';
 
 /**
  * props
  */
 type RightTagsRouterProps = {
-  tableInfo: Partial<DataSources.Table>;
   rightButtons?: React.ReactNode;
   queryParams: QueryParams;
   tagDisabled?: boolean;
+  className?: string;
 };
 
 const RightTagsRouter: React.FC<RightTagsRouterProps> = (props) => {
   const access = useAccess();
 
-  const { queryParams, tagDisabled = false, rightButtons } = props;
+  const { queryParams, tagDisabled = false, rightButtons, className } = props;
   const [tableInfo, setTableInfo] = useState<Partial<DataSources.Table>>({});
-  useEffect(() => {
+  useAsyncEffect(async () => {
     const fetchData = async () => {
       const result = await queryDataByParams(API_CONSTANTS.DATASOURCE_GET_TABLE, queryParams);
       setTableInfo(result as DataSources.Table);
     };
     if (queryParams.id !== 0) {
-      fetchData();
+      await fetchData();
     }
   }, [queryParams]);
   // state
@@ -128,9 +129,12 @@ const RightTagsRouter: React.FC<RightTagsRouterProps> = (props) => {
    * render
    */
   return (
-    <>
-      <ProCard className={'schemaTree'} size='small' bordered tabs={{ ...restTabProps }} />
-    </>
+    <ProCard
+      className={'schemaTree ' + (className ?? '')}
+      size='small'
+      bordered
+      tabs={{ ...restTabProps }}
+    />
   );
 };
 

@@ -355,8 +355,6 @@ public class TaskServiceImpl extends SuperServiceImpl<TaskMapper, Task> implemen
     public JobResult debugTask(TaskDTO task) throws Exception {
         // Debug mode need return result
         task.setUseResult(true);
-        // Debug mode need execute
-        task.setStatementSet(false);
         // mode check
         if (GatewayType.get(task.getType()).isDeployCluster()) {
             throw new BusException(Status.MODE_IS_NOT_ALLOW_SELECT.getMessage());
@@ -409,7 +407,8 @@ public class TaskServiceImpl extends SuperServiceImpl<TaskMapper, Task> implemen
                 }
                 int count = 0;
                 while (true) {
-                    JobInfoDetail jobInfoDetail = jobInstanceService.refreshJobInfoDetail(jobInstance.getId(), false);
+                    JobInfoDetail jobInfoDetail = jobInstanceService.refreshJobInfoDetail(
+                            jobInstance.getId(), jobInstance.getTaskId(), false);
                     if (JobStatus.isDone(jobInfoDetail.getInstance().getStatus())) {
                         log.info(
                                 "JobInstance [{}] status is [{}], ready to submit Job",
@@ -468,7 +467,7 @@ public class TaskServiceImpl extends SuperServiceImpl<TaskMapper, Task> implemen
             log.warn("Stop with savePoint failed: {}, will try normal rest api stop", e.getMessage());
             isSuccess = jobManager.cancelNormal(jobInstance.getJid());
         }
-        jobInstanceService.refreshJobInfoDetail(jobInstance.getId(), true);
+        jobInstanceService.refreshJobInfoDetail(jobInstance.getId(), jobInstance.getTaskId(), true);
         return isSuccess;
     }
 
@@ -607,7 +606,8 @@ public class TaskServiceImpl extends SuperServiceImpl<TaskMapper, Task> implemen
             if (Asserts.isNotNull(jobInstance)) {
                 jobInstance.setStep(lifeCycle.getValue());
                 boolean updatedJobInstance = jobInstanceService.updateById(jobInstance);
-                if (updatedJobInstance) jobInstanceService.refreshJobInfoDetail(jobInstance.getId(), true);
+                if (updatedJobInstance)
+                    jobInstanceService.refreshJobInfoDetail(jobInstance.getId(), jobInstance.getTaskId(), true);
                 log.warn(
                         "JobInstance [{}] step change to [{}] ,Trigger Force Refresh",
                         jobInstance.getName(),
@@ -1001,7 +1001,7 @@ public class TaskServiceImpl extends SuperServiceImpl<TaskMapper, Task> implemen
         } else {
             task.setStatement(buildEnvSql(task) + task.getStatement());
             JobConfig jobConfig = task.getJobConfig();
-            return LineageBuilder.getColumnLineageByLogicalPlan(task.getStatement(), jobConfig.getExecutorSetting());
+            return LineageBuilder.getColumnLineageByLogicalPlan(task.getStatement(), jobConfig);
         }
     }
 

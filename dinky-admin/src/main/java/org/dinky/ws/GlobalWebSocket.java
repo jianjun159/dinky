@@ -19,6 +19,7 @@
 
 package org.dinky.ws;
 
+import org.dinky.assertion.Asserts;
 import org.dinky.data.vo.SseDataVo;
 import org.dinky.utils.JsonUtils;
 import org.dinky.utils.ThreadUtil;
@@ -61,7 +62,10 @@ public class GlobalWebSocket {
             executorService.execute(() -> {
                 while (isRunning) {
                     Set<String> params = getRequestParamMap().get(value);
-                    sendTopic(value, params, value.getInstance().autoDataSend(params));
+                    Map<String, Object> topicMap = value.getInstance().autoDataSend(params);
+                    if (Asserts.isNotNullMap(topicMap)) {
+                        sendTopic(value, params, topicMap);
+                    }
                     ThreadUtil.sleep(value.getDelaySend());
                 }
             });
@@ -78,6 +82,13 @@ public class GlobalWebSocket {
     public static class RequestDTO {
         private Map<GlobalWebSocketTopic, Set<String>> topics;
         private String token;
+        private EventType type;
+
+        public enum EventType {
+            SUBSCRIBE,
+            PING,
+            PONG
+        }
     }
 
     private static final Map<Session, RequestDTO> TOPICS = new ConcurrentHashMap<>();
@@ -99,6 +110,13 @@ public class GlobalWebSocket {
                 TOPICS.remove(session);
                 return;
             }
+
+            if (requestDTO.getType() == RequestDTO.EventType.PING) {
+                SseDataVo data = new SseDataVo(session.getId(), RequestDTO.EventType.PONG);
+                session.getBasicRemote().sendText(JsonUtils.toJsonString(data));
+                return;
+            }
+
             Map<GlobalWebSocketTopic, Set<String>> topics = requestDTO.getTopics();
             if (MapUtil.isNotEmpty(topics)) {
                 TOPICS.put(session, requestDTO);

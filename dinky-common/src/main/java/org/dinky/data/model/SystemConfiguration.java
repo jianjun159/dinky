@@ -19,6 +19,7 @@
 
 package org.dinky.data.model;
 
+import org.dinky.assertion.Asserts;
 import org.dinky.context.EngineContextHolder;
 import org.dinky.data.constant.CommonConstant;
 import org.dinky.data.constant.DirConstant;
@@ -68,6 +69,9 @@ public class SystemConfiguration {
                     ReflectUtil.getFields(SystemConfiguration.class, f -> f.getType() == Configuration.class))
             .map(f -> (Configuration<?>) ReflectUtil.getFieldValue(systemConfiguration, f))
             .collect(Collectors.toList());
+
+    private final Configuration<Boolean> isFirstSystemIn =
+            key(Status.SYS_GLOBAL_IS_FIRST).booleanType().defaultValue(true);
 
     private final Configuration<Boolean> useRestAPI = key(Status.SYS_FLINK_SETTINGS_USERESTAPI)
             .booleanType()
@@ -387,10 +391,10 @@ public class SystemConfiguration {
     }
 
     public boolean isUseRestAPI() {
-        return useRestAPI.getValue();
+        return Asserts.isNull(useRestAPI.getValue()) ? useRestAPI.getDefaultValue() : useRestAPI.getValue();
     }
 
-    public int getJobIdWait() {
+    public int GetJobIdWaitValue() {
         return jobIdWait.getValue();
     }
 
@@ -427,7 +431,7 @@ public class SystemConfiguration {
                 .build();
     }
 
-    public TaskOwnerLockStrategyEnum getTaskOwnerLockStrategy() {
+    public TaskOwnerLockStrategyEnum GetTaskOwnerLockStrategyValue() {
         return taskOwnerLockStrategy.getValue();
     }
 
@@ -446,6 +450,7 @@ public class SystemConfiguration {
                     FileUtil.file(DirConstant.getTempRootDir(), "flink-job-archive")
                             .getAbsolutePath());
             config.put("historyserver.archive.fs.dir", FLINK_JOB_ARCHIVE);
+            config.put("historyserver.archive.clean-expired-jobs", "true");
         }
         return config;
     }
